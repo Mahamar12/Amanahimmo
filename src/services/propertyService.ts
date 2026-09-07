@@ -110,6 +110,11 @@ export const propertyService = {
       updated_at: now
     };
 
+    // Always save to local storage first so property is never lost
+    const properties = getLocalProperties();
+    const updatedLocal = [newProperty, ...properties.filter(p => p.reference !== newProperty.reference)];
+    saveLocalProperties(updatedLocal);
+
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase
@@ -120,20 +125,60 @@ export const propertyService = {
 
         if (!error && data) {
           return data as Property;
+        } else if (error) {
+          console.warn('Supabase insert notice:', error.message);
         }
       } catch (err) {
-        console.warn('Supabase insert failed, storing locally', err);
+        console.warn('Supabase insert failed, local copy kept', err);
       }
     }
 
-    const properties = getLocalProperties();
-    const updated = [newProperty, ...properties];
-    saveLocalProperties(updated);
     return newProperty;
   },
 
   async updateProperty(id: string, propertyData: Partial<Property>): Promise<Property | null> {
     const now = new Date().toISOString();
+
+    const properties = getLocalProperties();
+    const index = properties.findIndex(p => p.id === id);
+    let updatedProperty: Property;
+
+    if (index !== -1) {
+      updatedProperty = {
+        ...properties[index],
+        ...propertyData,
+        updated_at: now
+      };
+      properties[index] = updatedProperty;
+      saveLocalProperties(properties);
+    } else {
+      updatedProperty = {
+        id,
+        title: propertyData.title || 'Annonce',
+        slug: propertyData.slug || 'annonce',
+        reference: propertyData.reference || 'AM-0000',
+        description: propertyData.description || '',
+        transaction_type: propertyData.transaction_type || 'rent',
+        property_type: propertyData.property_type || 'apartment',
+        price: propertyData.price || 0,
+        price_period: propertyData.price_period || 'month',
+        location: propertyData.location || 'Dakar',
+        city: propertyData.city || 'Dakar',
+        neighborhood: propertyData.neighborhood || '',
+        area: propertyData.area || 0,
+        bedrooms: propertyData.bedrooms || 0,
+        bathrooms: propertyData.bathrooms || 0,
+        rooms: propertyData.rooms || 0,
+        features: propertyData.features || [],
+        main_image: propertyData.main_image || '',
+        images: propertyData.images || [],
+        featured: propertyData.featured || false,
+        status: propertyData.status || 'available',
+        created_at: now,
+        updated_at: now
+      };
+      saveLocalProperties([updatedProperty, ...properties]);
+    }
 
     if (isSupabaseConfigured && supabase) {
       try {
@@ -148,22 +193,10 @@ export const propertyService = {
           return data as Property;
         }
       } catch (err) {
-        console.warn('Supabase update failed, updating locally', err);
+        console.warn('Supabase update failed, local copy updated', err);
       }
     }
 
-    const properties = getLocalProperties();
-    const index = properties.findIndex(p => p.id === id);
-    if (index === -1) return null;
-
-    const updatedProperty = {
-      ...properties[index],
-      ...propertyData,
-      updated_at: now
-    };
-
-    properties[index] = updatedProperty;
-    saveLocalProperties(properties);
     return updatedProperty;
   },
 

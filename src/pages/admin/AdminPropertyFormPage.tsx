@@ -41,6 +41,8 @@ export const AdminPropertyFormPage: React.FC<AdminPropertyFormPageProps> = ({ pr
   const [uploadingImage, setUploadingImage] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [submitSuccess, setSubmitSuccess] = useState('');
 
   const handleDeleteProperty = async () => {
     if (!propertyId) return;
@@ -161,38 +163,54 @@ export const AdminPropertyFormPage: React.FC<AdminPropertyFormPageProps> = ({ pr
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    setSubmitError('');
+    setSubmitSuccess('');
 
-    const payload = {
-      title: formData.title || 'Annonce sans titre',
-      slug: formData.slug || generateSlug(formData.title || 'annonce'),
-      reference: formData.reference || 'AM-0000',
-      description: formData.description || '',
-      transaction_type: (formData.transaction_type || 'rent') as TransactionType,
-      property_type: (formData.property_type || 'apartment') as PropertyType,
-      price: Number(formData.price) || 0,
-      price_period: (formData.price_period || 'month') as PricePeriod,
-      location: formData.location || 'Dakar',
-      city: formData.city || 'Dakar',
-      neighborhood: formData.neighborhood || '',
-      area: Number(formData.area) || 0,
-      bedrooms: Number(formData.bedrooms) || 0,
-      bathrooms: Number(formData.bathrooms) || 0,
-      rooms: Number(formData.rooms) || 0,
-      features: formData.features || [],
-      main_image: formData.main_image || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80',
-      images: formData.images && formData.images.length > 0 ? formData.images : [formData.main_image || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80'],
-      featured: Boolean(formData.featured),
-      status: (formData.status || 'available') as PropertyStatus
-    };
+    try {
+      const titleVal = formData.title?.trim() || 'Annonce sans titre';
+      const refVal = formData.reference?.trim() || await propertyService.generateNextReference();
+      const mainImgVal = formData.main_image || (formData.images && formData.images.length > 0 ? formData.images[0] : 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80');
 
-    if (isEditMode && propertyId) {
-      await propertyService.updateProperty(propertyId, payload);
-    } else {
-      await propertyService.createProperty(payload);
+      const payload = {
+        title: titleVal,
+        slug: formData.slug || generateSlug(titleVal),
+        reference: refVal,
+        description: formData.description?.trim() || '',
+        transaction_type: (formData.transaction_type || 'rent') as TransactionType,
+        property_type: (formData.property_type || 'apartment') as PropertyType,
+        price: Number(formData.price) || 0,
+        price_period: (formData.price_period || 'month') as PricePeriod,
+        location: formData.location?.trim() || 'Dakar',
+        city: formData.city?.trim() || 'Dakar',
+        neighborhood: formData.neighborhood?.trim() || '',
+        area: Number(formData.area) || 0,
+        bedrooms: Number(formData.bedrooms) || 0,
+        bathrooms: Number(formData.bathrooms) || 0,
+        rooms: Number(formData.rooms) || 0,
+        features: formData.features || [],
+        main_image: mainImgVal,
+        images: formData.images && formData.images.length > 0 ? formData.images : [mainImgVal],
+        featured: Boolean(formData.featured),
+        status: (formData.status || 'available') as PropertyStatus
+      };
+
+      if (isEditMode && propertyId) {
+        await propertyService.updateProperty(propertyId, payload);
+        setSubmitSuccess('Modifications enregistrées avec succès !');
+      } else {
+        await propertyService.createProperty(payload);
+        setSubmitSuccess('Annonce publiée avec succès !');
+      }
+
+      setSaving(false);
+      setTimeout(() => {
+        onNavigate('/@dmin-amanahimmo/biens');
+      }, 600);
+    } catch (err: any) {
+      console.error('Publication error:', err);
+      setSaving(false);
+      setSubmitError(err?.message || 'Erreur lors de la publication.');
     }
-
-    setSaving(false);
-    onNavigate('/@dmin-amanahimmo/biens');
   };
 
   if (loading) {
@@ -229,6 +247,20 @@ export const AdminPropertyFormPage: React.FC<AdminPropertyFormPageProps> = ({ pr
       {/* FORM STRICTLY REQUIRED BY REQUIREMENTS #22 & #23 */}
       <form onSubmit={handleSubmit} className="space-y-8 bg-white p-8 sm:p-10 rounded-3xl border border-gray-100 shadow-xl">
         
+        {submitError && (
+          <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-2xl text-xs font-bold flex items-center justify-between">
+            <span>⚠️ {submitError}</span>
+            <button type="button" onClick={() => setSubmitError('')} className="text-red-500 hover:text-red-700">✕</button>
+          </div>
+        )}
+
+        {submitSuccess && (
+          <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 p-4 rounded-2xl text-xs font-bold flex items-center space-x-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{submitSuccess}</span>
+          </div>
+        )}
+
         {/* SECTION 1: Informations Générales */}
         <div className="space-y-4 pb-6 border-b border-gray-100">
           <h3 className="text-lg font-extrabold text-[#12372A] flex items-center gap-2">
