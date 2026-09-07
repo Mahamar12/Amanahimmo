@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { Property, PropertyType, TransactionType, PricePeriod, PropertyStatus } from '../../types/property';
 import { AVAILABLE_FEATURES, PROPERTY_TYPE_LABELS } from '../../types/property';
 import { propertyService } from '../../services/propertyService';
-import { Building2, ArrowLeft, Upload, Trash2, CheckCircle2, Image as ImageIcon } from 'lucide-react';
+import { Building2, ArrowLeft, Upload, Trash2, CheckCircle2, Image as ImageIcon, AlertTriangle, X } from 'lucide-react';
 
 interface AdminPropertyFormPageProps {
   propertyId?: string; // If defined, edit mode; if empty, create mode
@@ -39,6 +39,16 @@ export const AdminPropertyFormPage: React.FC<AdminPropertyFormPageProps> = ({ pr
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDeleteProperty = async () => {
+    if (!propertyId) return;
+    setDeleting(true);
+    await propertyService.deleteProperty(propertyId);
+    setDeleting(false);
+    onNavigate('/admin/biens');
+  };
 
   useEffect(() => {
     const initForm = async () => {
@@ -604,33 +614,104 @@ export const AdminPropertyFormPage: React.FC<AdminPropertyFormPageProps> = ({ pr
           </div>
         </div>
 
-        {/* Submit Button */}
-        <div className="pt-4 border-t border-gray-100 flex justify-end space-x-4">
-          <button
-            type="button"
-            onClick={() => onNavigate('/admin/biens')}
-            className="px-6 py-3 rounded-xl border border-gray-200 text-gray-700 font-bold text-xs uppercase tracking-wider hover:bg-gray-50 transition-colors"
-          >
-            Annuler
-          </button>
+        {/* Submit and Delete Bar */}
+        <div className="pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+          
+          {isEditMode ? (
+            <button
+              type="button"
+              onClick={() => setShowDeleteModal(true)}
+              className="w-full sm:w-auto px-5 py-3 rounded-xl bg-red-50 hover:bg-red-600 text-red-600 hover:text-white font-bold text-xs uppercase tracking-wider transition-colors flex items-center justify-center space-x-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>Supprimer cette publication</span>
+            </button>
+          ) : <div />}
 
-          <button
-            type="submit"
-            disabled={saving}
-            className="bg-[#12372A] hover:bg-[#0d281e] text-white font-bold py-3.5 px-8 rounded-xl shadow-lg transition-all flex items-center space-x-2 text-xs uppercase tracking-wider"
-          >
-            {saving ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <>
-                <CheckCircle2 className="w-4 h-4 text-[#D4AF37]" />
-                <span>{isEditMode ? 'Enregistrer les modifications' : 'Publier le bien'}</span>
-              </>
-            )}
-          </button>
+          <div className="flex items-center space-x-3 w-full sm:w-auto justify-end">
+            <button
+              type="button"
+              onClick={() => onNavigate('/admin/biens')}
+              className="px-6 py-3 rounded-xl border border-gray-200 text-gray-700 font-bold text-xs uppercase tracking-wider hover:bg-gray-50 transition-colors"
+            >
+              Annuler
+            </button>
+
+            <button
+              type="submit"
+              disabled={saving}
+              className="bg-[#12372A] hover:bg-[#0d281e] text-white font-bold py-3.5 px-8 rounded-xl shadow-lg transition-all flex items-center space-x-2 text-xs uppercase tracking-wider"
+            >
+              {saving ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <>
+                  <CheckCircle2 className="w-4 h-4 text-[#D4AF37]" />
+                  <span>{isEditMode ? 'Enregistrer les modifications' : 'Publier le bien'}</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
       </form>
+
+      {/* CONFIRMATION DE SUPPRESSION MODAL */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-6 animate-scale-up border border-gray-100">
+            
+            <div className="flex justify-between items-start">
+              <div className="w-12 h-12 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                className="text-gray-400 hover:text-gray-600 p-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-xl font-extrabold text-gray-900">
+                Supprimer cette publication ?
+              </h3>
+              <p className="text-xs text-gray-600 leading-relaxed">
+                Vous êtes sur le point de supprimer définitivement la publication <strong className="text-gray-900">"{formData.title}"</strong> (Réf: {formData.reference}). Elle ne sera plus affichée sur le site public.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end space-x-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-bold text-xs hover:bg-gray-50 transition-colors"
+              >
+                Annuler
+              </button>
+
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={handleDeleteProperty}
+                className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow transition-colors flex items-center space-x-2"
+              >
+                {deleting ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    <span>Confirmer la suppression</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );

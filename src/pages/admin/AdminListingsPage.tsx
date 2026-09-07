@@ -217,10 +217,11 @@ export const AdminListingsPage: React.FC<AdminListingsPageProps> = ({ onNavigate
 
                         <button
                           onClick={() => setDeleteCandidate(p)}
-                          className="p-2 rounded-lg bg-red-50 hover:bg-red-600 text-red-600 hover:text-white transition-colors"
-                          title="Supprimer le bien"
+                          className="px-2.5 py-1.5 rounded-lg bg-red-50 hover:bg-red-600 text-red-600 hover:text-white font-bold text-xs transition-colors flex items-center space-x-1"
+                          title="Supprimer cette publication"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span className="hidden sm:inline">Supprimer</span>
                         </button>
                       </div>
                     </td>
