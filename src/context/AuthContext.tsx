@@ -22,60 +22,69 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isSupabaseAuthActive, setIsSupabaseAuthActive] = useState<boolean>(false);
 
   useEffect(() => {
+    let subscription: { unsubscribe: () => void } | null = null;
+
     const checkAuth = async () => {
-      if (isSupabaseConfigured && supabase) {
-        try {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session) {
-            setIsAuthenticated(true);
-            setUserEmail(session.user.email || 'admin@amanahimmo.sn');
-            setIsSupabaseAuthActive(true);
-            setLoading(false);
-            return;
-          }
-        } catch (e) {
-          console.warn('Supabase Auth session check error', e);
-        }
-
-        // Listen for Supabase auth changes
-        const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-          if (session) {
-            setIsAuthenticated(true);
-            setUserEmail(session.user.email || 'admin@amanahimmo.sn');
-            setIsSupabaseAuthActive(true);
-          } else {
-            const savedSession = localStorage.getItem(AUTH_STORAGE_KEY);
-            if (!savedSession) {
-              setIsAuthenticated(false);
-              setUserEmail(null);
-              setIsSupabaseAuthActive(false);
+      try {
+        if (isSupabaseConfigured && supabase) {
+          try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+              setIsAuthenticated(true);
+              setUserEmail(session.user.email || 'admin@amanahimmo.sn');
+              setIsSupabaseAuthActive(true);
+              setLoading(false);
+              return;
             }
+          } catch (e) {
+            console.warn('Supabase Auth session check error', e);
           }
-        });
 
-        // Cleanup listener on unmount
-        return () => {
-          authListener?.subscription.unsubscribe();
-        };
-      }
-
-      // Check local session
-      const savedSession = localStorage.getItem(AUTH_STORAGE_KEY);
-      if (savedSession) {
-        try {
-          const parsed = JSON.parse(savedSession);
-          if (parsed.authenticated) {
-            setIsAuthenticated(true);
-            setUserEmail(parsed.email);
+          // Listen for Supabase auth changes
+          const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+            if (session) {
+              setIsAuthenticated(true);
+              setUserEmail(session.user.email || 'admin@amanahimmo.sn');
+              setIsSupabaseAuthActive(true);
+            } else {
+              const savedSession = localStorage.getItem(AUTH_STORAGE_KEY);
+              if (!savedSession) {
+                setIsAuthenticated(false);
+                setUserEmail(null);
+                setIsSupabaseAuthActive(false);
+              }
+            }
+          });
+          if (authListener?.subscription) {
+            subscription = authListener.subscription;
           }
-        } catch (e) {
-          console.error(e);
         }
+
+        // Check local session fallback
+        const savedSession = localStorage.getItem(AUTH_STORAGE_KEY);
+        if (savedSession) {
+          try {
+            const parsed = JSON.parse(savedSession);
+            if (parsed.authenticated) {
+              setIsAuthenticated(true);
+              setUserEmail(parsed.email);
+            }
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     checkAuth();
+
+    return () => {
+      if (subscription) {
+        subscription.unsubscribe();
+      }
+    };
   }, []);
 
   const login = async (email: string, pass: string): Promise<{ success: boolean; error?: string }> => {
