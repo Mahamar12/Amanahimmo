@@ -228,10 +228,43 @@ create policy "Admin delete" on public.properties for delete using (true);`;
       </div>
 
       {syncResult && (
-        <div className={`p-4 rounded-xl border text-xs ${
-          syncResult.success ? 'bg-emerald-100 border-emerald-300 text-emerald-900' : 'bg-red-100 border-red-300 text-red-900'
+        <div className={`p-5 rounded-2xl border text-xs space-y-3 ${
+          syncResult.success 
+            ? 'bg-emerald-50 border-emerald-300 text-emerald-900' 
+            : 'bg-red-50 border-red-300 text-red-900'
         }`}>
-          <p className="font-bold">{syncResult.msg}</p>
+          <div className="flex items-start justify-between">
+            <p className="font-bold text-sm">{syncResult.msg}</p>
+          </div>
+
+          {!syncResult.success && (syncResult.msg.includes('properties') || syncResult.msg.includes('schema cache')) && (
+            <div className="pt-2 border-t border-red-200/60 space-y-3">
+              <p className="text-xs text-red-800 leading-relaxed font-medium">
+                👉 <strong>Pour résoudre cela en 1 clic :</strong> Ouvrez le SQL Editor de Supabase, collez le script ci-dessous et cliquez sur <strong>Run ▶</strong>.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <a
+                  href="https://supabase.com/dashboard/project/lvbuyaaubauibwlutlzc/sql/new"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-[#12372A] hover:bg-[#0d281e] text-white font-bold px-4 py-2 rounded-xl text-xs shadow flex items-center space-x-1.5"
+                >
+                  <Database className="w-4 h-4 text-[#D4AF37]" />
+                  <span>Ouvrir Supabase SQL Editor ▶</span>
+                </a>
+
+                <button
+                  type="button"
+                  onClick={copySqlToClipboard}
+                  className="bg-red-100 hover:bg-red-200 text-red-900 font-bold px-4 py-2 rounded-xl text-xs flex items-center space-x-1.5 transition-colors border border-red-300"
+                >
+                  <Copy className="w-4 h-4 text-red-700" />
+                  <span>{copiedSql ? '✓ Script SQL copié !' : 'Copier le script SQL'}</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
