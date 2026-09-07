@@ -306,19 +306,19 @@ export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({ slug, on
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full bg-[#25D366] hover:bg-[#20ba59] text-white font-bold py-4 px-6 rounded-2xl shadow-lg hover:shadow-green-500/30 transition-all duration-200 flex items-center justify-center space-x-3 text-base"
+                className="w-full bg-[#25D366] hover:bg-[#20ba59] text-white font-bold py-3.5 sm:py-4 px-4 sm:px-6 rounded-2xl shadow-lg hover:shadow-green-500/30 transition-all duration-200 flex items-center justify-center space-x-2.5 text-sm sm:text-base"
               >
-                <MessageCircle className="w-6 h-6 fill-white" />
-                <span>Contacter sur WhatsApp</span>
+                <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 fill-white shrink-0" />
+                <span className="truncate">Contacter sur WhatsApp</span>
               </a>
 
               {/* Call Button */}
               <a
                 href="tel:+221781571313"
-                className="w-full bg-[#12372A] hover:bg-[#0d281e] text-white font-bold py-4 px-6 rounded-2xl shadow-lg hover:shadow-emerald-900/30 transition-all duration-200 flex items-center justify-center space-x-3 text-base"
+                className="w-full bg-[#12372A] hover:bg-[#0d281e] text-white font-bold py-3.5 sm:py-4 px-4 sm:px-6 rounded-2xl shadow-lg hover:shadow-emerald-900/30 transition-all duration-200 flex items-center justify-center space-x-2.5 text-sm sm:text-base"
               >
-                <Phone className="w-6 h-6 text-[#D4AF37]" />
-                <span>Appeler le 78 157 13 13</span>
+                <Phone className="w-5 h-5 sm:w-6 sm:h-6 text-[#D4AF37] shrink-0" />
+                <span className="truncate">Appeler le 78 157 13 13</span>
               </a>
             </div>
 

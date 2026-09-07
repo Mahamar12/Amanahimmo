@@ -36,7 +36,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate }) => {
             </a>
           </div>
           <div className="flex items-center space-x-4">
-            {isAuthenticated ? (
+            {isAuthenticated && (
               <div className="flex items-center space-x-3">
                 <button 
                   onClick={() => handleLinkClick('/@dmin-amanahimmo')} 
@@ -54,13 +54,6 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate }) => {
                   <span>Déconnexion</span>
                 </button>
               </div>
-            ) : (
-              <button 
-                onClick={() => handleLinkClick('/@dmin-amanahimmo/login')} 
-                className="text-gray-300 hover:text-[#D4AF37] transition-colors"
-              >
-                Accès Admin
-              </button>
             )}
           </div>
         </div>
@@ -175,19 +168,12 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate }) => {
               );
             })}
 
-            {isAuthenticated ? (
+            {isAuthenticated && (
               <button
                 onClick={() => handleLinkClick('/@dmin-amanahimmo')}
                 className="text-left px-4 py-3 rounded-lg text-base font-semibold text-[#D4AF37] bg-[#12372A]"
               >
                 Tableau de bord Admin
-              </button>
-            ) : (
-              <button
-                onClick={() => handleLinkClick('/@dmin-amanahimmo/login')}
-                className="text-left px-4 py-3 rounded-lg text-sm text-gray-500 hover:bg-gray-50"
-              >
-                Connexion administrateur
               </button>
             )}
           </div>
@@ -198,17 +184,17 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate }) => {
               href="https://wa.me/221781571313?text=Bonjour%20AmanahImmo,%20je%20souhaite%20obtenir%20des%20informations%20sur%20vos%20biens."
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center space-x-2 bg-[#25D366] text-white font-semibold py-3 px-4 rounded-xl shadow-sm"
+              className="flex items-center justify-center space-x-2 bg-[#25D366] hover:bg-[#20ba59] text-white font-bold py-3 px-4 rounded-xl shadow-sm text-sm sm:text-base w-full transition-all"
             >
-              <MessageCircle className="w-5 h-5 fill-white" />
-              <span>Contacter sur WhatsApp (+221 78 157 13 13)</span>
+              <MessageCircle className="w-5 h-5 fill-white shrink-0" />
+              <span className="truncate">Contacter sur WhatsApp (78 157 13 13)</span>
             </a>
 
             <a
               href="tel:+221781571313"
-              className="flex items-center justify-center space-x-2 bg-[#12372A] text-white font-semibold py-3 px-4 rounded-xl shadow-sm"
+              className="flex items-center justify-center space-x-2 bg-[#12372A] hover:bg-[#0d281e] text-white font-bold py-3 px-4 rounded-xl shadow-sm text-sm sm:text-base w-full transition-all"
             >
-              <Phone className="w-5 h-5" />
+              <Phone className="w-5 h-5 shrink-0 text-[#D4AF37]" />
               <span>Appeler le 78 157 13 13</span>
             </a>
           </div>
