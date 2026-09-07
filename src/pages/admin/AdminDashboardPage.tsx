@@ -4,7 +4,8 @@ import { propertyService } from '../../services/propertyService';
 import { isSupabaseConfigured, setRuntimeSupabaseConfig, clearRuntimeSupabaseConfig, currentSupabaseUrl } from '../../lib/supabase';
 import { 
   Building2, PlusCircle, CheckCircle, Key, Tag, ShoppingBag, 
-  RotateCcw, Database, Eye, ArrowRight, RefreshCw, X, Check, Copy, KeyRound
+  RotateCcw, Database, Eye, ArrowRight, RefreshCw, X, Check, Copy, KeyRound,
+  Trash2, Edit, AlertTriangle
 } from 'lucide-react';
 
 interface AdminDashboardPageProps {
@@ -23,6 +24,19 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
   const [inputUrl, setInputUrl] = useState(currentSupabaseUrl || '');
   const [inputKey, setInputKey] = useState('');
   const [copiedSql, setCopiedSql] = useState(false);
+
+  // Delete State
+  const [deleteCandidate, setDeleteCandidate] = useState<Property | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const confirmDelete = async () => {
+    if (!deleteCandidate) return;
+    setDeleting(true);
+    await propertyService.deleteProperty(deleteCandidate.id);
+    setDeleting(false);
+    setDeleteCandidate(null);
+    loadProperties();
+  };
 
   const loadProperties = async () => {
     setLoading(true);
@@ -349,7 +363,15 @@ create policy "Admin delete" on public.properties for delete using (true);`;
                           className="p-1.5 rounded bg-amber-50 text-amber-700 hover:bg-amber-500 hover:text-white transition-colors"
                           title="Modifier"
                         >
-                          ✏️
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => setDeleteCandidate(p)}
+                          className="px-2.5 py-1.5 rounded-lg bg-red-50 hover:bg-red-600 text-red-600 hover:text-white font-bold text-xs transition-colors flex items-center space-x-1"
+                          title="Supprimer cette publication"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span className="hidden sm:inline">Supprimer</span>
                         </button>
                       </div>
                     </td>
@@ -442,6 +464,63 @@ create policy "Admin delete" on public.properties for delete using (true);`;
                 </div>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* CONFIRMATION DE SUPPRESSION MODAL */}
+      {deleteCandidate && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-6 animate-scale-up border border-gray-100">
+            
+            <div className="flex justify-between items-start">
+              <div className="w-12 h-12 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <button
+                type="button"
+                onClick={() => setDeleteCandidate(null)}
+                className="text-gray-400 hover:text-gray-600 p-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-xl font-extrabold text-gray-900">
+                Supprimer cette publication ?
+              </h3>
+              <p className="text-xs text-gray-600 leading-relaxed">
+                Vous êtes sur le point de supprimer la publication <strong className="text-gray-900">"{deleteCandidate.title}"</strong> (Réf: {deleteCandidate.reference}). Elle ne sera plus affichée sur le site public.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end space-x-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteCandidate(null)}
+                className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-bold text-xs hover:bg-gray-50 transition-colors"
+              >
+                Annuler
+              </button>
+
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={confirmDelete}
+                className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow transition-colors flex items-center space-x-2"
+              >
+                {deleting ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    <span>Confirmer la suppression</span>
+                  </>
+                )}
+              </button>
+            </div>
+
           </div>
         </div>
       )}
