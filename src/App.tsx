@@ -22,7 +22,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode; onNavigate: (path: s
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
-      onNavigate('/admin/login');
+      onNavigate('/@dmin-amanahimmo/login');
     }
   }, [isAuthenticated, loading, onNavigate]);
 
@@ -68,9 +68,9 @@ const AppContent: React.FC = () => {
       return <PropertyDetailPage slug={slug} onNavigate={navigate} />;
     }
 
-    // Admin edit page: /admin/biens/:id/modifier
-    if (currentPath.startsWith('/admin/biens/') && currentPath.endsWith('/modifier')) {
-      const id = currentPath.replace('/admin/biens/', '').replace('/modifier', '');
+    // Admin edit page: /@dmin-amanahimmo/biens/:id/modifier
+    if (currentPath.startsWith('/@dmin-amanahimmo/biens/') && currentPath.endsWith('/modifier')) {
+      const id = currentPath.replace('/@dmin-amanahimmo/biens/', '').replace('/modifier', '');
       return (
         <ProtectedRoute onNavigate={navigate}>
           <AdminPropertyFormPage propertyId={id} onNavigate={navigate} />
@@ -91,21 +91,21 @@ const AppContent: React.FC = () => {
         return <ContactPage />;
       
       // Admin Routes
-      case '/admin/login':
+      case '/@dmin-amanahimmo/login':
         return <AdminLoginPage onNavigate={navigate} />;
-      case '/admin':
+      case '/@dmin-amanahimmo':
         return (
           <ProtectedRoute onNavigate={navigate}>
             <AdminDashboardPage onNavigate={navigate} onSelectProperty={handleSelectProperty} />
           </ProtectedRoute>
         );
-      case '/admin/biens':
+      case '/@dmin-amanahimmo/biens':
         return (
           <ProtectedRoute onNavigate={navigate}>
             <AdminListingsPage onNavigate={navigate} onSelectProperty={handleSelectProperty} />
           </ProtectedRoute>
         );
-      case '/admin/biens/nouveau':
+      case '/@dmin-amanahimmo/biens/nouveau':
         return (
           <ProtectedRoute onNavigate={navigate}>
             <AdminPropertyFormPage onNavigate={navigate} />

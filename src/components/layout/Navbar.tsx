@@ -39,7 +39,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate }) => {
             {isAuthenticated ? (
               <div className="flex items-center space-x-3">
                 <button 
-                  onClick={() => handleLinkClick('/admin')} 
+                  onClick={() => handleLinkClick('/@dmin-amanahimmo')} 
                   className="flex items-center space-x-1 text-[#D4AF37] hover:underline font-medium"
                 >
                   <UserCheck className="w-3.5 h-3.5" />
@@ -56,7 +56,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate }) => {
               </div>
             ) : (
               <button 
-                onClick={() => handleLinkClick('/admin/login')} 
+                onClick={() => handleLinkClick('/@dmin-amanahimmo/login')} 
                 className="text-gray-300 hover:text-[#D4AF37] transition-colors"
               >
                 Accès Admin
@@ -177,14 +177,14 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate }) => {
 
             {isAuthenticated ? (
               <button
-                onClick={() => handleLinkClick('/admin')}
+                onClick={() => handleLinkClick('/@dmin-amanahimmo')}
                 className="text-left px-4 py-3 rounded-lg text-base font-semibold text-[#D4AF37] bg-[#12372A]"
               >
                 Tableau de bord Admin
               </button>
             ) : (
               <button
-                onClick={() => handleLinkClick('/admin/login')}
+                onClick={() => handleLinkClick('/@dmin-amanahimmo/login')}
                 className="text-left px-4 py-3 rounded-lg text-sm text-gray-500 hover:bg-gray-50"
               >
                 Connexion administrateur

@@ -47,7 +47,7 @@ export const AdminPropertyFormPage: React.FC<AdminPropertyFormPageProps> = ({ pr
     setDeleting(true);
     await propertyService.deleteProperty(propertyId);
     setDeleting(false);
-    onNavigate('/admin/biens');
+    onNavigate('/@dmin-amanahimmo/biens');
   };
 
   useEffect(() => {
@@ -190,7 +190,7 @@ export const AdminPropertyFormPage: React.FC<AdminPropertyFormPageProps> = ({ pr
     }
 
     setSaving(false);
-    onNavigate('/admin/biens');
+    onNavigate('/@dmin-amanahimmo/biens');
   };
 
   if (loading) {
@@ -207,7 +207,7 @@ export const AdminPropertyFormPage: React.FC<AdminPropertyFormPageProps> = ({ pr
       {/* Header */}
       <div className="flex items-center justify-between border-b border-gray-100 pb-6">
         <button
-          onClick={() => onNavigate('/admin/biens')}
+          onClick={() => onNavigate('/@dmin-amanahimmo/biens')}
           className="inline-flex items-center space-x-2 text-[#12372A] font-semibold text-sm hover:underline"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -631,7 +631,7 @@ export const AdminPropertyFormPage: React.FC<AdminPropertyFormPageProps> = ({ pr
           <div className="flex items-center space-x-3 w-full sm:w-auto justify-end">
             <button
               type="button"
-              onClick={() => onNavigate('/admin/biens')}
+              onClick={() => onNavigate('/@dmin-amanahimmo/biens')}
               className="px-6 py-3 rounded-xl border border-gray-200 text-gray-700 font-bold text-xs uppercase tracking-wider hover:bg-gray-50 transition-colors"
             >
               Annuler

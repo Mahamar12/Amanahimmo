@@ -112,7 +112,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between text-xs text-gray-400">
           <p>© 2026 AmanahImmo — Tous droits réservés.</p>
           <div className="mt-4 md:mt-0 flex items-center space-x-6">
-            <button onClick={() => onNavigate('/admin/login')} className="hover:text-[#D4AF37]">
+            <button onClick={() => onNavigate('/@dmin-amanahimmo/login')} className="hover:text-[#D4AF37]">
               Espace Administrateur
             </button>
           </div>

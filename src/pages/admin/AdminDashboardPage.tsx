@@ -149,7 +149,7 @@ create policy "Admin delete" on public.properties for delete using (true);`;
 
         <div className="flex flex-wrap gap-3">
           <button
-            onClick={() => onNavigate('/admin/biens/nouveau')}
+            onClick={() => onNavigate('/@dmin-amanahimmo/biens/nouveau')}
             className="bg-[#12372A] hover:bg-[#0d281e] text-white font-bold text-xs uppercase tracking-wider py-3 px-5 rounded-xl shadow transition-all flex items-center space-x-2"
           >
             <PlusCircle className="w-4 h-4 text-[#D4AF37]" />
@@ -157,7 +157,7 @@ create policy "Admin delete" on public.properties for delete using (true);`;
           </button>
 
           <button
-            onClick={() => onNavigate('/admin/biens')}
+            onClick={() => onNavigate('/@dmin-amanahimmo/biens')}
             className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold text-xs uppercase tracking-wider py-3 px-5 rounded-xl transition-all"
           >
             Gérer les biens
@@ -302,7 +302,7 @@ create policy "Admin delete" on public.properties for delete using (true);`;
             <p className="text-gray-500 text-xs">Liste des 5 dernières annonces enregistrées</p>
           </div>
           <button
-            onClick={() => onNavigate('/admin/biens')}
+            onClick={() => onNavigate('/@dmin-amanahimmo/biens')}
             className="text-xs font-bold text-[#12372A] hover:text-[#D4AF37] flex items-center space-x-1"
           >
             <span>Voir toute la liste</span>
@@ -359,7 +359,7 @@ create policy "Admin delete" on public.properties for delete using (true);`;
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => onNavigate(`/admin/biens/${p.id}/modifier`)}
+                          onClick={() => onNavigate(`/@dmin-amanahimmo/biens/${p.id}/modifier`)}
                           className="p-1.5 rounded bg-amber-50 text-amber-700 hover:bg-amber-500 hover:text-white transition-colors"
                           title="Modifier"
                         >

@@ -78,7 +78,7 @@ export const AdminListingsPage: React.FC<AdminListingsPageProps> = ({ onNavigate
         </div>
 
         <button
-          onClick={() => onNavigate('/admin/biens/nouveau')}
+          onClick={() => onNavigate('/@dmin-amanahimmo/biens/nouveau')}
           className="bg-[#12372A] hover:bg-[#0d281e] text-white font-bold text-xs uppercase tracking-wider py-3 px-6 rounded-xl shadow transition-all flex items-center justify-center space-x-2 shrink-0"
         >
           <Plus className="w-4 h-4 text-[#D4AF37]" />
@@ -208,7 +208,7 @@ export const AdminListingsPage: React.FC<AdminListingsPageProps> = ({ onNavigate
                         </button>
 
                         <button
-                          onClick={() => onNavigate(`/admin/biens/${p.id}/modifier`)}
+                          onClick={() => onNavigate(`/@dmin-amanahimmo/biens/${p.id}/modifier`)}
                           className="p-2 rounded-lg bg-amber-50 hover:bg-[#D4AF37] text-amber-800 hover:text-white transition-colors"
                           title="Modifier le bien"
                         >

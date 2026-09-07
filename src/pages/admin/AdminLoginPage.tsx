@@ -38,7 +38,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onNavigate }) =>
       setSubmitting(false);
 
       if (result.success) {
-        onNavigate('/admin');
+        onNavigate('/@dmin-amanahimmo');
       } else {
         setErrorMsg(result.error || 'Identifiants invalides.');
       }
