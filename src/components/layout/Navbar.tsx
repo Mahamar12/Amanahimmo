@@ -168,14 +168,6 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate }) => {
               );
             })}
 
-            {isAuthenticated && (
-              <button
-                onClick={() => handleLinkClick('/@dmin-amanahimmo')}
-                className="text-left px-4 py-3 rounded-lg text-base font-semibold text-[#D4AF37] bg-[#12372A]"
-              >
-                Tableau de bord Admin
-              </button>
-            )}
           </div>
 
           {/* Mobile CTAs */}
