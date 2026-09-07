@@ -120,6 +120,12 @@ create table if not exists public.properties (
 );
 
 alter table public.properties enable row level security;
+
+drop policy if exists "Public view" on public.properties;
+drop policy if exists "Admin insert" on public.properties;
+drop policy if exists "Admin update" on public.properties;
+drop policy if exists "Admin delete" on public.properties;
+
 create policy "Public view" on public.properties for select using (true);
 create policy "Admin insert" on public.properties for insert with check (true);
 create policy "Admin update" on public.properties for update using (true);
