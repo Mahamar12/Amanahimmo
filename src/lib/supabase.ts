@@ -1,14 +1,17 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 const getSupabaseConfig = () => {
-  const envUrl = import.meta.env.VITE_SUPABASE_URL || '';
-  const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+  const defaultUrl = 'https://lvbuyaaubauibwlutlzc.supabase.co';
+  const defaultKey = 'sb_publishable_30sFyBhngpdrqJPEufU-MA_z10OxTTo';
+
+  const envUrl = import.meta.env.VITE_SUPABASE_URL || defaultUrl;
+  const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY || defaultKey;
 
   const localUrl = localStorage.getItem('amanah_supabase_url') || '';
   const localKey = localStorage.getItem('amanah_supabase_key') || '';
 
-  const url = envUrl || localUrl;
-  const key = envKey || localKey;
+  const url = localUrl || envUrl;
+  const key = localKey || envKey;
 
   const isConfigured = Boolean(
     url && url.startsWith('https://') && key && key.length > 20
