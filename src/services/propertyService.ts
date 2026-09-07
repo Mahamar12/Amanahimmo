@@ -1,0 +1,277 @@
+import type { Property } from '../types/property';
+import { INITIAL_PROPERTIES } from '../data/initialProperties';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
+
+const STORAGE_KEY = 'amanahimmo_properties_v1';
+
+// Helper to get local state
+const getLocalProperties = (): Property[] => {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (!stored) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_PROPERTIES));
+    return INITIAL_PROPERTIES;
+  }
+  try {
+    return JSON.parse(stored);
+  } catch (e) {
+    console.error('Failed to parse local properties', e);
+    return INITIAL_PROPERTIES;
+  }
+};
+
+const saveLocalProperties = (properties: Property[]) => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(properties));
+};
+
+export const propertyService = {
+  async getProperties(): Promise<Property[]> {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('properties')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (!error && data && data.length > 0) {
+          return data as Property[];
+        }
+      } catch (err) {
+        console.warn('Supabase query failed, using local storage fallback', err);
+      }
+    }
+    return getLocalProperties();
+  },
+
+  async getPropertyBySlug(slug: string): Promise<Property | null> {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('properties')
+          .select('*')
+          .eq('slug', slug)
+          .single();
+
+        if (!error && data) {
+          return data as Property;
+        }
+      } catch (err) {
+        console.warn('Supabase slug fetch failed', err);
+      }
+    }
+    const properties = getLocalProperties();
+    return properties.find(p => p.slug === slug) || null;
+  },
+
+  async getPropertyById(id: string): Promise<Property | null> {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('properties')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (!error && data) {
+          return data as Property;
+        }
+      } catch (err) {
+        console.warn('Supabase id fetch failed', err);
+      }
+    }
+    const properties = getLocalProperties();
+    return properties.find(p => p.id === id) || null;
+  },
+
+  async generateNextReference(): Promise<string> {
+    const properties = await this.getProperties();
+    let maxNum = 0;
+    
+    properties.forEach(p => {
+      if (p.reference && p.reference.startsWith('AM-')) {
+        const numPart = parseInt(p.reference.replace('AM-', ''), 10);
+        if (!isNaN(numPart) && numPart > maxNum) {
+          maxNum = numPart;
+        }
+      }
+    });
+
+    const nextNum = maxNum + 1;
+    return `AM-${nextNum.toString().padStart(4, '0')}`;
+  },
+
+  async createProperty(propertyData: Omit<Property, 'id' | 'created_at' | 'updated_at'>): Promise<Property> {
+    const now = new Date().toISOString();
+    const newId = `prop-${Date.now()}`;
+    
+    const newProperty: Property = {
+      ...propertyData,
+      id: newId,
+      created_at: now,
+      updated_at: now
+    };
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('properties')
+          .insert([propertyData])
+          .select()
+          .single();
+
+        if (!error && data) {
+          return data as Property;
+        }
+      } catch (err) {
+        console.warn('Supabase insert failed, storing locally', err);
+      }
+    }
+
+    const properties = getLocalProperties();
+    const updated = [newProperty, ...properties];
+    saveLocalProperties(updated);
+    return newProperty;
+  },
+
+  async updateProperty(id: string, propertyData: Partial<Property>): Promise<Property | null> {
+    const now = new Date().toISOString();
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('properties')
+          .update({ ...propertyData, updated_at: now })
+          .eq('id', id)
+          .select()
+          .single();
+
+        if (!error && data) {
+          return data as Property;
+        }
+      } catch (err) {
+        console.warn('Supabase update failed, updating locally', err);
+      }
+    }
+
+    const properties = getLocalProperties();
+    const index = properties.findIndex(p => p.id === id);
+    if (index === -1) return null;
+
+    const updatedProperty = {
+      ...properties[index],
+      ...propertyData,
+      updated_at: now
+    };
+
+    properties[index] = updatedProperty;
+    saveLocalProperties(properties);
+    return updatedProperty;
+  },
+
+  async deleteProperty(id: string): Promise<boolean> {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { error } = await supabase
+          .from('properties')
+          .delete()
+          .eq('id', id);
+
+        if (!error) {
+          return true;
+        }
+      } catch (err) {
+        console.warn('Supabase delete failed', err);
+      }
+    }
+
+    const properties = getLocalProperties();
+    const filtered = properties.filter(p => p.id !== id);
+    saveLocalProperties(filtered);
+    return true;
+  },
+
+  async uploadImage(file: File): Promise<string> {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+        const filePath = `properties/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('property-photos')
+          .upload(filePath, file);
+
+        if (!uploadError) {
+          const { data } = supabase.storage
+            .from('property-photos')
+            .getPublicUrl(filePath);
+          
+          if (data?.publicUrl) {
+            return data.publicUrl;
+          }
+        }
+      } catch (err) {
+        console.warn('Supabase Storage upload failed, fallback to Data URL', err);
+      }
+    }
+
+    // Fallback: convert file to Base64 Data URL for local preview
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  },
+
+  resetDemoData() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_PROPERTIES));
+    return INITIAL_PROPERTIES;
+  },
+
+  async syncToSupabase(): Promise<{ success: boolean; count: number; error?: string }> {
+    if (!isSupabaseConfigured || !supabase) {
+      return { success: false, count: 0, error: 'Supabase n\'est pas configuré.' };
+    }
+
+    try {
+      const localProps = getLocalProperties();
+      
+      // Clean properties payload for database insertion
+      const payload = localProps.map(p => ({
+        title: p.title,
+        slug: p.slug,
+        reference: p.reference,
+        description: p.description,
+        transaction_type: p.transaction_type,
+        property_type: p.property_type,
+        price: p.price,
+        price_period: p.price_period || 'month',
+        location: p.location,
+        city: p.city || 'Dakar',
+        neighborhood: p.neighborhood || '',
+        area: p.area || 0,
+        bedrooms: p.bedrooms || 0,
+        bathrooms: p.bathrooms || 0,
+        rooms: p.rooms || 0,
+        features: p.features || [],
+        main_image: p.main_image,
+        images: p.images || [p.main_image],
+        featured: p.featured || false,
+        status: p.status || 'available'
+      }));
+
+      const { data, error } = await supabase
+        .from('properties')
+        .upsert(payload, { onConflict: 'reference' })
+        .select();
+
+      if (error) {
+        return { success: false, count: 0, error: error.message };
+      }
+
+      return { success: true, count: data ? data.length : payload.length };
+    } catch (err: any) {
+      return { success: false, count: 0, error: err?.message || 'Erreur lors de la synchronisation.' };
+    }
+  }
+};

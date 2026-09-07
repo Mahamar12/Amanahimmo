@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --color-primary: #12372A;
+    --color-primary-hover: #0d281e;
+    --color-secondary: #D4AF37;
+    --color-secondary-hover: #b89628;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+  }
+}
+
+/* Custom Utilities */
+.bg-brand-green {
+  background-color: #12372A;
+}
+
+.text-brand-green {
+  color: #12372A;
+}
+
+.border-brand-green {
+  border-color: #12372A;
+}
+
+.bg-brand-gold {
+  background-color: #D4AF37;
+}
+
+.text-brand-gold {
+  color: #D4AF37;
+}
+
+.border-brand-gold {
+  border-color: #D4AF37;
+}
+
+.hover\:bg-brand-green-dark:hover {
+  background-color: #0d281e;
+}
+
+.hover\:bg-brand-gold-dark:hover {
+  background-color: #be9c30;
+}
+
+/* Glassmorphism & custom effects */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.glass-dark {
+  background: rgba(18, 55, 42, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
