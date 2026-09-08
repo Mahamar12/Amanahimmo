@@ -20,7 +20,71 @@ const getLocalProperties = (): Property[] => {
 };
 
 const saveLocalProperties = (properties: Property[]) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(properties));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(properties));
+  } catch (e: any) {
+    console.warn('LocalStorage quota exceeded, performing automatic image cleanup fallback', e);
+    try {
+      // Strip oversized Base64 data URLs from older items if storage limit is reached
+      const cleanedProps = properties.map((p, idx) => {
+        if (idx > 1) {
+          const cleanMain = p.main_image.startsWith('data:') 
+            ? 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80' 
+            : p.main_image;
+          const cleanImages = (p.images || []).map(img => 
+            img.startsWith('data:') ? cleanMain : img
+          );
+          return { ...p, main_image: cleanMain, images: cleanImages };
+        }
+        return p;
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cleanedProps));
+    } catch (err) {
+      console.error('Critical LocalStorage fallback', err);
+    }
+  }
+};
+
+// Image Compression Helper (Max 1200px dimension, 0.75 JPEG quality)
+const compressImageFile = (file: File, maxDimension = 1200, quality = 0.75): Promise<string> => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      if (!dataUrl) return resolve('');
+
+      const img = new Image();
+      img.src = dataUrl;
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          } else {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        } else {
+          resolve(dataUrl);
+        }
+      };
+      img.onerror = () => resolve(dataUrl);
+    };
+    reader.onerror = () => resolve('');
+  });
 };
 
 export const propertyService = {
@@ -243,17 +307,12 @@ export const propertyService = {
           }
         }
       } catch (err) {
-        console.warn('Supabase Storage upload failed, fallback to Data URL', err);
+        console.warn('Supabase Storage upload failed, fallback to compressed Data URL', err);
       }
     }
 
-    // Fallback: convert file to Base64 Data URL for local preview
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+    // Fallback: Compress photo to lightweight ~100KB Data URL so local storage quota is never exceeded
+    return compressImageFile(file);
   },
 
   resetDemoData() {
